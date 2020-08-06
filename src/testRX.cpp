@@ -1,0 +1,93 @@
+#include "../include/limeSDR.h"
+#include "../include/aoPlayer.h"
+
+#include "math.h"
+#include <iomanip>
+#include <complex>
+#include <cmath>
+
+int running = 0;
+
+int main(int argc, char** argv) {
+  limeSDR sdr = limeSDR();
+  aoPlayer player = aoPlayer();
+  char *audio_buffer;
+  int driver = player.initDefaultPlayer();
+
+  sdr.setRX();
+  sdr.setFreq(104.3e6);
+
+  const int audioSampleRate = 44100;
+  const int overSampleRate = 16;
+  double sampleRate = (audioSampleRate * overSampleRate);
+
+  sdr.setSampleRate(sampleRate);
+  sdr.setGain(1.00);
+  sdr.setFIRFilter();
+
+  sdr.initStream();
+  sdr.startStream();
+
+  // Initialize data buffers
+  const int sampleCnt = 5000; //complex samples per buffer
+  int16_t buffer[sampleCnt * 2]; //buffer to hold complex values (2*samples))
+
+  int buf_size = player.setFormat();
+  ao_device *device = player.openPlayer(driver);
+  audio_buffer = (char*)calloc(buf_size, sizeof(char));
+
+  running = 1;
+  float I, Q;
+  static float demodOut;
+  static float filterOut = 0;
+  static float decimateCnt = 0;
+  std::complex<float> sample;
+  static std::complex<float> lastSample(0, 0);
+  std::complex<float> v;
+
+  int audioSampleCnt = 0;
+  int audioGain = 7000;
+
+  while (running) {
+    int samplesRead = sdr.getStream(*buffer, sampleCnt);
+
+    for (int i=0; i<samplesRead*2; i+=2) {
+
+      const float gain = 1.0/32;
+      I = gain * (float)buffer[i];
+      Q = gain * (float)buffer[i+1];
+      sample = std::complex<float>(I, Q);
+
+      // FM demodulate
+      sample *= 1.0/(0.2 + std::abs(sample));    // limit amplitude to 1
+      v = sample * std::conj(lastSample);        // compute phase change vector
+      lastSample = sample;                       // remember the this sample
+      demodOut = std::imag(v);                   // 'Q' or imaginary part will contain the audio
+
+      // lowpass filter the demod output
+      filterOut = 0.98 * filterOut + 0.02 * demodOut;
+
+      // match left and right channel -> casting to an int
+      if (++decimateCnt >= overSampleRate) {
+        decimateCnt = 0;
+
+        int j = audioSampleCnt;
+        int16_t filterOutInt = audioGain * filterOut;
+        player.buildBuffer(audio_buffer, j, filterOutInt);
+
+        if (++audioSampleCnt == buf_size/4) {
+          player.play(device, audio_buffer, buf_size);
+          audioSampleCnt = 0;
+        }
+      }
+    }
+  }
+
+  sdr.stopStream();
+
+  player.close(device);
+  player.shutDown();
+
+  sdr.close();
+  return 0;
+}
