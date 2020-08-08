@@ -1,10 +1,25 @@
 #include "../include/limeSDR.h"
 #include "../include/aoPlayer.h"
 
+
 #include "math.h"
 #include <iomanip>
 #include <complex>
 #include <cmath>
+
+
+float fmDemod(std::complex<float> &sample, std::complex<float> &lastSample, std::complex<float> &v, float demodOut, float filterOut) {
+    // FM demodulate
+    sample *= 1.0/(0.2 + std::abs(sample));    // limit amplitude to 1
+    v = sample * std::conj(lastSample);        // compute phase change vector
+    lastSample = sample;                       // remember the this sample
+    demodOut = std::imag(v);                   // 'Q' or imaginary part will contain the audio
+
+    // lowpass filter the demod output
+    filterOut = 0.98 * filterOut + 0.02 * demodOut;
+    return filterOut;
+}
+
 
 int running = 0;
 
@@ -17,13 +32,15 @@ int main(int argc, char** argv) {
   sdr.setRX();
   sdr.setFreq(104.3e6);
 
+  int audioGain = 7000;
+
   const int audioSampleRate = 44100;
   const int overSampleRate = 16;
   double sampleRate = (audioSampleRate * overSampleRate);
 
   sdr.setSampleRate(sampleRate);
   sdr.setGain(1.00);
-  sdr.setFIRFilter();
+  sdr.setFIRFilter(200e3); //200e3 for wfm
 
   sdr.initStream();
   sdr.startStream();
@@ -46,7 +63,6 @@ int main(int argc, char** argv) {
   std::complex<float> v;
 
   int audioSampleCnt = 0;
-  int audioGain = 7000;
 
   while (running) {
     int samplesRead = sdr.getStream(*buffer, sampleCnt);
@@ -58,14 +74,7 @@ int main(int argc, char** argv) {
       Q = gain * (float)buffer[i+1];
       sample = std::complex<float>(I, Q);
 
-      // FM demodulate
-      sample *= 1.0/(0.2 + std::abs(sample));    // limit amplitude to 1
-      v = sample * std::conj(lastSample);        // compute phase change vector
-      lastSample = sample;                       // remember the this sample
-      demodOut = std::imag(v);                   // 'Q' or imaginary part will contain the audio
-
-      // lowpass filter the demod output
-      filterOut = 0.98 * filterOut + 0.02 * demodOut;
+      filterOut = fmDemod(sample, lastSample, v, demodOut, filterOut);
 
       // match left and right channel -> casting to an int
       if (++decimateCnt >= overSampleRate) {

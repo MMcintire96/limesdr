@@ -10,7 +10,7 @@ class limeSDR {
     void listAntenna();
     void setAntenna(int antenna);
     void setSampleRate(double sampleRate);
-    void setFIRFilter();
+    void setFIRFilter(float bandwidth);
     void initStream();
     void startStream();
     int getStream(int16_t &buffer, int sampleCnt);

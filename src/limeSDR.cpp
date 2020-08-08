@@ -60,9 +60,9 @@ void limeSDR::setAntenna(int antenna) {
     error();
 }
 
-void limeSDR::setFIRFilter() {
+void limeSDR::setFIRFilter(float bandwidth) {
   // Set the FIR filter bandwidth to 200 kHz
-  if (LMS_SetGFIRLPF(device, false, LMS_CH_RX, true, 200e3) != 0)
+  if (LMS_SetGFIRLPF(device, false, LMS_CH_RX, true, bandwidth) != 0)
     error();
 }
 
