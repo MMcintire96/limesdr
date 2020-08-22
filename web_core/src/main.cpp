@@ -6,76 +6,43 @@
 //
 //
 
-// Test with netcat.
-// Start this server program running.
-// Then open a terminal window and type
-//   nc 127.0.0.1 8089
-// Afer nc starts, you can type anything and it will echo back
-// It will also be printed in the terminal of the server
-// You can also connect with a browser
-//   http://127.0.0.1:8089/?Jackisadog
-// It will print the browser headers and so on
-// The browser will hang since this program does not send a proper response
-// A simple improvement would be to return a header and an HTML file
-//
-
 #include "../include/network_tools.h"
 #include "../include/utilities.h"
 #include <vector>
 #include <map>
 #include <sstream>
+#include <functional>
 #include <mutex>
 
 
-class Worker {
-public:
-    virtual void Process(std::string message, std::map<std::string, std::string> request) = 0;
-};
+using fp = void(*)();
+std::map<std::string, fp> routeTable;
 
-class MyWorker : public Worker {
-public:
-    void Process(std::string message, std::map<std::string, std::string> request) {
-      printf("%s\n", message.c_str());
-    }
-};
-
-typedef void (*funcP)();
-class RouteTable {
-  public:
-    std::map<std::string, funcP> table;
-};
 
 void home() {
-  //mprintf("HTTP/1.0 200 OK\r\n");
-  //mprintf("Connection: keep-alive\r\n");
-  //mprintf("Content-Type: text/html; charset=ISO-8859-1\r\n");
-  //int byteCnt = 29;
-  //mprintf("Content-Length: %d\r\n", byteCnt);
-  //mprintf("\r\n");
-  //mprintf("Thanks for visiting our page.");
+  printf("here");
+  tcp_Server.mprintf("HTTP/1.0 200 OK\r\n");
+  tcp_Server.mprintf("Connection: keep-alive\r\n");
+  tcp_Server.mprintf("Content-Type: text/html; charset=ISO-8859-1\r\n");
+  int byteCnt = 29;
+  tcp_Server.mprintf("Content-Length: %d\r\n", byteCnt);
+  tcp_Server.mprintf("\r\n");
+  tcp_Server.mprintf("Thanks for visiting our page.");
 }
 
-
-class MyServer : public TCP_Server {
+class Server : public TCP_Server {
 
 public:
 
-  void receive(char* buffer, int bufferSize, int clientIndex)
-  {
+  void receive(char* buffer, int bufferSize, int clientIndex) {
     myServerMutex.lock();
     printf("\nReceived: \n%s\n", buffer);
 
     std::string message = buffer;
     lastClientMessage = buffer;
 
-    RouteTable t;
-    t.table["/"] = &home;
 
     std::map<std::string, std::string> request;
-    //std::map<std::string, Worker*> routeTable;
-
-    //MyWorker myWorker;
-    //routeTable["path"] = &myWorker;
 
     message.erase(message.find_last_of("\n"), 1);
 
@@ -85,17 +52,18 @@ public:
     //probably breaks, only HTTP 1
     if (message.find("HTTP") >= 0)  {
       parseHTTP(message, request);
-      router(t, request, message);
+      router(routeTable, request, message);
     }
 
     myServerMutex.unlock();
   }
 
 
+  void buildRouteTable() {
+    routeTable["/"] = &home;
+  }
 
-  // parse http headers into a map
-  // should split path on first ? and create a nested queryParams map based on ? and &
-  // http is network protocol abstraction and shoud be placed above the tcp layer
+
   void parseHTTP(std::string message, std::map<std::string, std::string> &request) {
 
     request["method"] = message.substr(0, message.find(" "));
@@ -113,15 +81,10 @@ public:
     if (message.find("\r\n\n") == -1) return;
   }
 
-  // handle routeTable mapping for multiple /URL using function pointers
-  // the route table should be above the http layer
-  // if (!map[string]) this shoudl return generic 404 page
-  //void router(std::map<std::string, Worker*> &routeTable, std::map<std::string, std::string> &request, std::string message) {
-  void router(RouteTable &t, std::map<std::string, std::string> &request, std::string message) {
-    funcP p = t.table[request["path"]];
-    if (p != NULL)
-      p();
-    printf("Routing to function at %p\n", p);
+  void router(std::map<std::string, fp> &routeTable, std::map<std::string, std::string> &request, std::string message) {
+    fp p = routeTable[request["path"]];
+    p();
+    printf("Routing to function at %p\n", &p);
   }
 
 
@@ -131,8 +94,11 @@ public:
 };
 
 
+
+
 // create an instance of the MyServer class
-MyServer tcp_Server;
+Server tcp_Server;
+
 // Main thread
 int main(int argc, const char * argv[])
 {
@@ -147,6 +113,7 @@ int main(int argc, const char * argv[])
 
   // inform the main thread that the server has been started
   tcp_Server.serverIsUp = 0;
+
 
   // loop the main thread
   // just sleeping and counting the bytes received

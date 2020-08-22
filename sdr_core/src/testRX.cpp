@@ -70,14 +70,19 @@ int main(int argc, char** argv) {
 
   int audioSampleCnt = 0;
 
-  int fd;
-  std::string fifoLoc = "/tmp/limesdr-fifo";
+  //int fd;
+  //std::string fifoLoc = "/tmp/limesdr-fifo";
+  //mkfifo(fifoLoc.c_str(), 0666);
+  //fd = open(fifoLoc.c_str(), O_RDONLY);
+  //if (fd == -1) return -1;
 
-  mkfifo(fifoLoc.c_str(), 0666);
+  int iqfd;
+  std::string iqfifo = "/tmp/limesdr-iq-fifo";
+  mkfifo(iqfifo.c_str(), 0666);
+  iqfd = open(iqfifo.c_str(), O_WRONLY);
 
-  fd = open(fifoLoc.c_str(), O_RDONLY);
+  //if (iqfd == -1) return -1;
 
-  if (fd == -1) return -1;
   char freqBuffer[11];
 
 
@@ -107,14 +112,16 @@ int main(int argc, char** argv) {
       }
     }
 
+    write(iqfd, &audioSampleCnt, sizeof(audioSampleCnt));
+
     //debounc this for sure, sdr setFreq should return success, then change freq
-    if (read(fd, freqBuffer, sizeof(freqBuffer)) > 0) {
-      float nFreq = std::stof(freqBuffer) * 1000000;
-      if (nFreq != freq) {
-        sdr.setFreq(nFreq);
-        freq = nFreq;
-      }
-    }
+    //if (read(fd, freqBuffer, sizeof(freqBuffer)) > 0) {
+    //  float nFreq = std::stof(freqBuffer) * 1000000;
+    //  if (nFreq != freq) {
+    //    sdr.setFreq(nFreq);
+    //    freq = nFreq;
+    //  }
+    //}
 
   }
 

@@ -70,8 +70,8 @@ void TCP_Server::msend(const char* data, size_t length)
 	if (clientIndex > 0)	send(clientIndex , data , length, 0 );
 }
 
-TCP_Server::TCP_Server()
-{
+typedef void (*funcP)();
+TCP_Server::TCP_Server() {
 }
 
 TCP_Server::~TCP_Server()
@@ -87,8 +87,8 @@ int TCP_Server::Run()
 	int opt = true;
 	int addrlen=0, activity=0, i=0 , valread=0 , sd=0;
 	int max_sd=0;
-    struct sockaddr_in address;
-    unsigned long last_client_address = 0;
+  struct sockaddr_in address;
+  unsigned long last_client_address = 0;
 
 	const int readBufferSize = 1024;
 

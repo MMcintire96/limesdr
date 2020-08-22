@@ -31,12 +31,12 @@ public:
 	~TCP_Server();
 
 	void SetVerbose(int verbose) { this->verbose = verbose; }
+	int mprintf(const char *format,...);
 
 protected:
 
 	virtual void receive(char* buffer, int bufferSize, int clientIndex)=0;
 
-	int mprintf(const char *format,...);
 	void msend(const char* data, size_t length);
 
 private:
@@ -50,29 +50,6 @@ private:
 	int master_socket, new_socket;
 
 	int Run();
-};
-
-// The example demonstrates how to override the receive() to
-// implement a general purpose server.
-
-class ExampleEchoServer : public TCP_Server
-{
-public:
-    void receive(char* buffer, int bufferSize, int clientIndex)
-    {
-        printf("\nReceived: \n%s\n", buffer);
-
-        std::string message = buffer;
-
-        message.erase(message.find_last_of("\n"), 1);
-
-        if (message == "quit") serverUp = 0;
-
-        mprintf("bufferSize = %d. You sent this: ", bufferSize);
-        msend(buffer, strlen(buffer));
-    }
-
-    int serverUp = 1;
 };
 
 
