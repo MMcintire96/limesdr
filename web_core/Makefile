@@ -10,7 +10,7 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d) ./include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -Ofast
+CPPFLAGS ?= $(INC_FLAGS) -Ofast -g
 
 LDFLAGS = -lstdc++ \
 		  -lpthread

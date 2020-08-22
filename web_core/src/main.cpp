@@ -19,41 +19,45 @@
 // A simple improvement would be to return a header and an HTML file
 //
 
-#include "network_tools.h"
-#include "utilities.h"
+#include "../include/network_tools.h"
+#include "../include/utilities.h"
 #include <vector>
 #include <map>
 #include <sstream>
 #include <mutex>
 
 
-class Worker
-{
+class Worker {
 public:
     virtual void Process(std::string message, std::map<std::string, std::string> request) = 0;
 };
 
-class MyWorker : public Worker
-{
+class MyWorker : public Worker {
 public:
-    void Process(std::string message, std::map<std::string, std::string> request)
-    {
-        printf("%s\n", message.c_str());
+    void Process(std::string message, std::map<std::string, std::string> request) {
+      printf("%s\n", message.c_str());
     }
 };
 
+typedef void (*funcP)();
+class RouteTable {
+  public:
+    std::map<std::string, funcP> table;
+};
 
-// MyServer is derived from the TCP_Server class.
-// It overrides the one virtual function in the TCP_Server class.
-// The TCP_Server class will call this function whenever it receives data from a client.
-// MyServer should process the data and respond (optional) to the client using msend() and mprintf().
-// The receive function is always called by the server thread.
-// The variable 'serverIsUp' is used by the main thread to track the status of the server.
-// 'lastClientMessage' is used to pass the data received to the main thread.
-// A mutex is use to prevent simultanous access by the two threads.
+void home() {
+  //mprintf("HTTP/1.0 200 OK\r\n");
+  //mprintf("Connection: keep-alive\r\n");
+  //mprintf("Content-Type: text/html; charset=ISO-8859-1\r\n");
+  //int byteCnt = 29;
+  //mprintf("Content-Length: %d\r\n", byteCnt);
+  //mprintf("\r\n");
+  //mprintf("Thanks for visiting our page.");
+}
 
-class MyServer : public TCP_Server
-{
+
+class MyServer : public TCP_Server {
+
 public:
 
   void receive(char* buffer, int bufferSize, int clientIndex)
@@ -64,11 +68,14 @@ public:
     std::string message = buffer;
     lastClientMessage = buffer;
 
-    std::map<std::string, std::string> request;
-    std::map<std::string, Worker*> routeTable;
+    RouteTable t;
+    t.table["/"] = &home;
 
-    MyWorker myWorker;
-    routeTable["path"] = &myWorker;
+    std::map<std::string, std::string> request;
+    //std::map<std::string, Worker*> routeTable;
+
+    //MyWorker myWorker;
+    //routeTable["path"] = &myWorker;
 
     message.erase(message.find_last_of("\n"), 1);
 
@@ -78,34 +85,13 @@ public:
     //probably breaks, only HTTP 1
     if (message.find("HTTP") >= 0)  {
       parseHTTP(message, request);
-      router(routeTable, request, message);
+      router(t, request, message);
     }
-
-
-    // return header --- this is just a place holder to keep the browser happy
-      mprintf("HTTP/1.0 200 OK\r\n");
-      mprintf("Connection: keep-alive\r\n");
-
-      mprintf("Content-Type: text/html; charset=ISO-8859-1\r\n");
-
-      int byteCnt = 29;
-      mprintf("Content-Length: %d\r\n", byteCnt);
-      mprintf("\r\n");
-      mprintf("Thanks for visiting our page.");
 
     myServerMutex.unlock();
   }
 
-  //all Views should really be defined as classes for a large scale implementation
-  //for now we can make views just check request["method"] and handle based on this
-  //this will get messy for really complex views
-  //this should return headers(200, OK) and an html File if GET,
-  //this should return headers(200, OK) and json::data if POST,PUT
-  //this should return headers(200, OK) for all other methods
-  void home(std::string message, std::map<std::string, std::string> request) {
-    std::string resp = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\nContent-length: 20\r\n\r\n<h1>Hello World</h1>";
-    msend(resp.c_str(), strlen(resp.c_str())); //seg faults? probably has to do with buffer size and what not
-  }
+
 
   // parse http headers into a map
   // should split path on first ? and create a nested queryParams map based on ? and &
@@ -130,12 +116,12 @@ public:
   // handle routeTable mapping for multiple /URL using function pointers
   // the route table should be above the http layer
   // if (!map[string]) this shoudl return generic 404 page
-  void router(std::map<std::string, Worker*> &routeTable, std::map<std::string, std::string> &request, std::string message)
-  {
-    //sig_ptr func = routeTable[request["path"]];
-    //(this->*func)(message, request); //not a true implementation of currying but works for routing
-    //  routeTable[request["path"]];
-      routeTable.find("path")->second->Process(message, request);
+  //void router(std::map<std::string, Worker*> &routeTable, std::map<std::string, std::string> &request, std::string message) {
+  void router(RouteTable &t, std::map<std::string, std::string> &request, std::string message) {
+    funcP p = t.table[request["path"]];
+    if (p != NULL)
+      p();
+    printf("Routing to function at %p\n", p);
   }
 
 
