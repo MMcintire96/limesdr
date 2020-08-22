@@ -1,17 +1,34 @@
 const http = require('http');
-
 const fs = require('fs');
 const net = require('net');
-
 const WebSocket = require('ws');
+const path = require('path');
+
+const sendFile = (req, res) => {
+  if (req.url === '/') {
+    const filename = './public/index.html'
+    fs.readFile(filename, (err, data) =>  {
+      res.write(data);
+      res.end();
+    });
+  } else {
+    if (fs.existsSync(`./public${req.url}`)) {
+      fs.readFile(`./public${req.url}`, (err, data) =>  {
+        res.write(data);
+        res.end();
+      });
+    }
+    else {
+      res.end();
+    }
+  }
+}
 
 const requestListener = (req, res) => {
-  res.writeHead(200, {'Content-type': 'text/html'});
-  fs.readFile('templates/index.html', (err, data) => {
-    res.write(data);
-    res.end();
-  });
+  res.writeHead(200);
+  sendFile(req, res);
 }
+
 
 const server = http.createServer(requestListener).listen(8089);
 

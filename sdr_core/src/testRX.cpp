@@ -112,7 +112,6 @@ int main(int argc, char** argv) {
       }
     }
 
-    write(iqfd, &audioSampleCnt, sizeof(audioSampleCnt));
 
     //debounc this for sure, sdr setFreq should return success, then change freq
     //if (read(fd, freqBuffer, sizeof(freqBuffer)) > 0) {
