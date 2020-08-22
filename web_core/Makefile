@@ -1,4 +1,4 @@
-TARGET_EXEC ?= sdr
+TARGET_EXEC ?= web
 
 BUILD_DIR ?= build
 SRC_DIRS ?= src
@@ -10,10 +10,10 @@ DEPS := $(OBJS:.o=.d)
 INC_DIRS := $(shell find $(SRC_DIRS) -type d) ./include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -Ofast
+CPPFLAGS ?= $(INC_FLAGS) -Ofast
 
-LDFLAGS = -lao \
-		  -Bstatic /usr/lib/libLimeSuite.so
+LDFLAGS = -lstdc++ \
+		  -lpthread
 
 
 $(TARGET_EXEC): $(OBJS)
@@ -48,9 +48,6 @@ clean:
 
 MKDIR_P ?= mkdir -p
 
-all: sdr
+all: web
 run: all
 	./sdr
-
-install: sdr
-	cp $< /usr/bin/sdr

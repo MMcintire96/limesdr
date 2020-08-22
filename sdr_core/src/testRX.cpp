@@ -1,6 +1,10 @@
 #include "../include/limeSDR.h"
 #include "../include/aoPlayer.h"
 
+#include <sys/stat.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 
 #include "math.h"
 #include <iomanip>
@@ -24,13 +28,15 @@ float fmDemod(std::complex<float> &sample, std::complex<float> &lastSample, std:
 int running = 0;
 
 int main(int argc, char** argv) {
+
   limeSDR sdr = limeSDR();
   aoPlayer player = aoPlayer();
   char *audio_buffer;
   int driver = player.initDefaultPlayer();
 
   sdr.setRX();
-  sdr.setFreq(104.3e6);
+  float freq = 104.3e6;
+  sdr.setFreq(freq);
 
   int audioGain = 7000;
 
@@ -64,6 +70,17 @@ int main(int argc, char** argv) {
 
   int audioSampleCnt = 0;
 
+  int fd;
+  std::string fifoLoc = "/tmp/limesdr-fifo";
+
+  mkfifo(fifoLoc.c_str(), 0666);
+
+  fd = open(fifoLoc.c_str(), O_RDONLY);
+
+  if (fd == -1) return -1;
+  char freqBuffer[11];
+
+
   while (running) {
     int samplesRead = sdr.getStream(*buffer, sampleCnt);
 
@@ -76,7 +93,6 @@ int main(int argc, char** argv) {
 
       filterOut = fmDemod(sample, lastSample, v, demodOut, filterOut);
 
-      // match left and right channel -> casting to an int
       if (++decimateCnt >= overSampleRate) {
         decimateCnt = 0;
 
@@ -90,6 +106,16 @@ int main(int argc, char** argv) {
         }
       }
     }
+
+    //debounc this for sure, sdr setFreq should return success, then change freq
+    if (read(fd, freqBuffer, sizeof(freqBuffer)) > 0) {
+      float nFreq = std::stof(freqBuffer) * 1000000;
+      if (nFreq != freq) {
+        sdr.setFreq(nFreq);
+        freq = nFreq;
+      }
+    }
+
   }
 
   sdr.stopStream();
