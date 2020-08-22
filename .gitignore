@@ -1,0 +1,14 @@
+# Apple directory files
+.DS_Store
+.DS_Store?
+.Spotlight-V100
+.Trashes
+
+# build results
+*.o
+*.so
+*.exe
+*.dll
+*.dylib
+
+
