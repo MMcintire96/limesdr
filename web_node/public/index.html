@@ -4,50 +4,59 @@
 
 <body>
 
-  <div class="header">
-    <div class="row flex-center">
-      <div class="col">
-        <h2>SDR<h2>
+  <div class="navbar d-flex flex-row">
+    <div class="navbar-brand-wrapper d-flex flex-center">
+      <div class="navbar-brand-inner-wrapper d-flex flex-center align-cnter w-100">
+        <h2>SDR</h2>
       </div>
+    </div>
+    <div class="navbar-menu-wrapper d-flex flex-end align-center">
     </div>
   </div>
 
-  <h1 class="text-center">Controls</h1>
-  <div class="row">
-    <div class="col flex-center">
-      <div class="input-wrapper">
-        <label for="sdr-freq">Frequency</label>
-        <input type="number" placeholder="" id="sdr-freq" value="104.3">
-        <label for="sdr-bandwidth">Bandwidth</label>
-        <input type="number" placeholder="" id="sdr-bandwidth" value="">
+  <div class="container-fluid page-body-wrapper">
+    <nav class="sidebar">
+      <ul class="nav">
+        <li class="nav-item input">
+          <label for="sdr-freq">Frequency</label>
+          <input type="number" placeholder="" id="sdr-freq" value="104.3">
+        </li>
+        <li class="nav-item input">
+          <label for="sdr-bandwidth">Bandwidth</label>
+          <input type="number" placeholder="" id="sdr-bandwidth" value="">
+        </li>
+        <li class="nav-item input">
+          <label for="sdr-sample-rate">Sample Rate</label>
+          <input type="number" placeholder="" id="sdr-sample-rate" value="">
+        </li>
+        <li class="nav-item input">
+          <label for="sdr-over-sample-rate">Over Sample Rate</label>
+          <input type="number" placeholder="" id="sdr-over-sample-rate" value="">
+        </li>
+        <li class="nav-item input">
+          <label for="sdr-sample-rate">Gain</label>
+          <input type="number" placeholder="" id="sdr-gain" value="">
+        </li>
+        <li class="nav-item input">
+          <label for="sdr-mode">Transmit</label>
+          <select id="sdr-mode">
+            <option>RX</option>
+            <option>TX</option>
+          </select>
+        </li>
+      </ul>
+    </nav>
+    <div class="main-panel">
+      <div class="content-wrapper">
+        <div class="row">
+          <div class="col">
+            <div class="card">
+            <h1>Fake SIN Wave</h1>
+            <canvas class="flex-center" id="iq-canvas"></canvas>
+            </div>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="col flex-center">
-      <div class="input-wrapper">
-        <label for="sdr-sample-rate">Sample Rate</label>
-        <input type="number" placeholder="" id="sdr-sample-rate" value="">
-        <label for="sdr-over-sample-rate">Over Sample Rate</label>
-        <input type="number" placeholder="" id="sdr-over-sample-rate" value="">
-      </div>
-    </div>
-    <div class="col flex-center">
-      <div class="input-wrapper">
-        <label for="sdr-sample-rate">Gain</label>
-        <input type="number" placeholder="" id="sdr-gain" value="">
-        <label for="sdr-mode">Transmit</label>
-        <select id="sdr-mode">
-          <option>RX</option>
-          <option>TX</option>
-        </select>
-      </div>
-    </div>
-  </div>
-
-
-  <h1 class="text-center">Fake SIN Wave</h1>
-  <div class="row">
-    <div class="col flex-center">
-      <canvas class="flex-center" id="iq-canvas"></canvas>
     </div>
   </div>
 

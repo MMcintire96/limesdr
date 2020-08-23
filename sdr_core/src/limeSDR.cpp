@@ -35,8 +35,8 @@ void limeSDR::setFreq(float freq) {
     error();
 }
 
-void limeSDR::setSampleRate(double sampleRate) {
-  if (LMS_SetSampleRate(device, sampleRate, 16) != 0)
+void limeSDR::setSampleRate(double sampleRate, int overSampleRate) {
+  if (LMS_SetSampleRate(device, sampleRate, overSampleRate) != 0)
     error();
 }
 

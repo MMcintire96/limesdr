@@ -25,35 +25,13 @@ float fmDemod(std::complex<float> &sample, std::complex<float> &lastSample, std:
     return filterOut;
 }
 
-limeSDR sdr = limeSDR();
 
 //TODO fifo block (running) untill a byte is read -- fix
 
-struct Stats {
-  bool rx;
-  bool tx;
-  float freq;
-  float gain;
-  float bandwidth;
-  double sampleRate;
-  int overSampleRate;
-  char* antenna[5];
-};
-
-//TODO does this need to be a fifo? why not just a file(kinda like a config file)
-void writeStats(Stats *s) {
-  std::string stats_fifo = "/tmp/limesdr-stats";
-  mkfifo(stats_fifo.c_str(), 0666);
-  FILE *stats_fd = fopen(stats_fifo.c_str(), "w");
-  //TODO does not write to pipe
-  fwrite(s, sizeof(struct Stats), 1, stats_fd);
-  //fclose(stats_fd);
-}
-
 int running = 0;
 
-int main(int argc, char** argv) {
-  Stats stats;
+int run(int argc, char** argv) {
+  limeSDR sdr = limeSDR();
 
   float freq = 104.3e6;
   float gain = 1.0;
@@ -72,7 +50,7 @@ int main(int argc, char** argv) {
   const int overSampleRate = 16;
   double sampleRate = (audioSampleRate * overSampleRate);
 
-  sdr.setSampleRate(sampleRate);
+  //sdr.setSampleRate(sampleRate);
   sdr.setGain(gain);
   sdr.setFIRFilter(FIRFilter); //200e3 for wfm
 
@@ -97,16 +75,6 @@ int main(int argc, char** argv) {
   std::complex<float> v;
 
   int audioSampleCnt = 0;
-
-  stats.tx = false;
-  stats.rx = true;
-  stats.freq = freq;
-  stats.gain = gain;
-  stats.sampleRate = sampleRate;
-  stats.overSampleRate = overSampleRate;
-  stats.bandwidth = FIRFilter;
-  writeStats(&stats);
-
 
   std::string iqfifo = "/tmp/limesdr-iq-fifo";
   mkfifo(iqfifo.c_str(), 0666);
