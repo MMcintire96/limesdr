@@ -6,7 +6,6 @@ class limeSDR {
     int error();
     void setRX();
     void setFreq(float freq);
-    int getChannels();
     void setGain(float gain);
     void listAntenna();
     void setAntenna(int antenna);
