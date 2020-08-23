@@ -42,7 +42,7 @@ const readPipe = (ws) => {
   fs.open('/tmp/limesdr-iq-fifo', fs.constants.O_RDONLY | fs.constants.O_NONBLOCK, (err, fd) => {
     const pipe = new net.Socket({fd});
     pipe.on('data', (data) => {
-      ws.send(data.toString())
+      ws.send(data, {binary: true})
     });
   });
 }

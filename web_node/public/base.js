@@ -1,9 +1,18 @@
-const ws_iq_data = []
+const sample_data = [];
+const iq_data = [];
+
+
+const parseSamples = (buffer) => {
+}
+
 const buildSocket = () => {
   const ws = new WebSocket('ws://localhost:8089');
+  ws.binaryType = 'arraybuffer';
   const ws_data = document.getElementById('ws-data');
   ws.onmessage = (event) => {
-    ws_iq_data.push(event.data);
+    const d = new Uint16Array(event.data);
+    sample_data.push(d);
+    parseSamples(d);
   };
 }
 buildSocket();
@@ -41,10 +50,11 @@ const plotSin = (ctx, xOffset, yOffset) => {
   let x = 4;
   let y = 0;
   let amp = 40;
-  let freq = 20;
+  let freq = 2;
 
   ctx.moveTo(x, 50); //4,50
   while (x < width) {
+    //(2 PI * FT)
     y = height/2 + amp * Math.sin( (x+xOffset) / freq);
     //y = height/2 + amp * ws_iq_data[x]
     ctx.lineTo(x, y);

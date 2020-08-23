@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "math.h"
 #include <iomanip>
@@ -76,10 +77,11 @@ int main(int argc, char** argv) {
   //fd = open(fifoLoc.c_str(), O_RDONLY);
   //if (fd == -1) return -1;
 
-  int iqfd;
+  // int iqfd;
   std::string iqfifo = "/tmp/limesdr-iq-fifo";
   mkfifo(iqfifo.c_str(), 0666);
-  iqfd = open(iqfifo.c_str(), O_WRONLY);
+  // iqfd = open(iqfifo.c_str(), O_WRONLY);
+  FILE *iqfdF = fopen(iqfifo.c_str(), "wb");
 
   //if (iqfd == -1) return -1;
 
@@ -88,6 +90,8 @@ int main(int argc, char** argv) {
 
   while (running) {
     int samplesRead = sdr.getStream(*buffer, sampleCnt);
+
+    fwrite(buffer, sizeof(int16_t), sampleCnt * 2, iqfdF);
 
     for (int i=0; i<samplesRead*2; i+=2) {
 
