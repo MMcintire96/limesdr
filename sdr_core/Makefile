@@ -14,8 +14,8 @@ INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -Ofast
 
 LDFLAGS = -lao \
-		  #-Bstatic /usr/lib/libLimeSuite.so
-		  -Bstatic /usr/local/lib/libLimeSuite.dylib
+		  -Bstatic /usr/lib/libLimeSuite.so \
+		  #-Bstatic /usr/local/lib/libLimeSuite.dylib
 
 
 $(TARGET_EXEC): $(OBJS)

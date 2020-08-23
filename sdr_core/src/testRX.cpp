@@ -25,18 +25,44 @@ float fmDemod(std::complex<float> &sample, std::complex<float> &lastSample, std:
     return filterOut;
 }
 
+limeSDR sdr = limeSDR();
+
+//TODO fifo block (running) untill a byte is read -- fix
+
+struct Stats {
+  bool rx;
+  bool tx;
+  float freq;
+  float gain;
+  float bandwidth;
+  double sampleRate;
+  int overSampleRate;
+  char* antenna[5];
+};
+
+void writeStats(Stats *s) {
+  std::string stats_fifo = "/tmp/limesdr-stats";
+  mkfifo(stats_fifo.c_str(), 0666);
+  FILE *stats_fd = fopen(stats_fifo.c_str(), "w");
+  //TODO does not write to pipe
+  fwrite(s, sizeof(struct Stats), 1, stats_fd);
+  //fclose(stats_fd);
+}
 
 int running = 0;
 
 int main(int argc, char** argv) {
+  Stats stats;
 
-  limeSDR sdr = limeSDR();
+  float freq = 104.3e6;
+  float gain = 1.0;
+  float FIRFilter = 200e3; // bandwidth
+
   aoPlayer player = aoPlayer();
   char *audio_buffer;
   int driver = player.initDefaultPlayer();
 
   sdr.setRX();
-  float freq = 104.3e6;
   sdr.setFreq(freq);
 
   int audioGain = 7000;
@@ -46,8 +72,8 @@ int main(int argc, char** argv) {
   double sampleRate = (audioSampleRate * overSampleRate);
 
   sdr.setSampleRate(sampleRate);
-  sdr.setGain(1.00);
-  sdr.setFIRFilter(200e3); //200e3 for wfm
+  sdr.setGain(gain);
+  sdr.setFIRFilter(FIRFilter); //200e3 for wfm
 
   sdr.initStream();
   sdr.startStream();
@@ -71,27 +97,27 @@ int main(int argc, char** argv) {
 
   int audioSampleCnt = 0;
 
-  //int fd;
-  //std::string fifoLoc = "/tmp/limesdr-fifo";
-  //mkfifo(fifoLoc.c_str(), 0666);
-  //fd = open(fifoLoc.c_str(), O_RDONLY);
-  //if (fd == -1) return -1;
+  stats.tx = false;
+  stats.rx = true;
+  stats.freq = freq;
+  stats.gain = gain;
+  stats.sampleRate = sampleRate;
+  stats.overSampleRate = overSampleRate;
+  stats.bandwidth = FIRFilter;
+  writeStats(&stats);
 
-  // int iqfd;
+
   std::string iqfifo = "/tmp/limesdr-iq-fifo";
   mkfifo(iqfifo.c_str(), 0666);
-  // iqfd = open(iqfifo.c_str(), O_WRONLY);
-  FILE *iqfdF = fopen(iqfifo.c_str(), "wb");
-
-  //if (iqfd == -1) return -1;
+  FILE *iqfd = fopen(iqfifo.c_str(), "wb");
 
   char freqBuffer[11];
-
 
   while (running) {
     int samplesRead = sdr.getStream(*buffer, sampleCnt);
 
-    fwrite(buffer, sizeof(int16_t), sampleCnt * 2, iqfdF);
+    //TODO not every sample -> send 1k/sec -> oversampled to 705600
+    fwrite(buffer, sizeof(int16_t), sampleCnt * 2, iqfd);
 
     for (int i=0; i<samplesRead*2; i+=2) {
 
