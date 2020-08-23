@@ -3,6 +3,7 @@
   <link rel="stylesheet" href="/base.css">
 
 <body>
+
   <div class="header">
     <div class="row flex-center">
       <div class="col">
@@ -10,13 +11,46 @@
       </div>
     </div>
   </div>
-  <p id="ws-data">
+
+  <h1 class="text-center">Controls</h1>
+  <div class="row">
+    <div class="col flex-center">
+      <div class="input-wrapper">
+        <label for="sdr-freq">Frequency</label>
+        <input type="number" placeholder="" id="sdr-freq" value="104.3">
+        <label for="sdr-bandwidth">Bandwidth</label>
+        <input type="number" placeholder="" id="sdr-bandwidth" value="">
+      </div>
+    </div>
+    <div class="col flex-center">
+      <div class="input-wrapper">
+        <label for="sdr-sample-rate">Sample Rate</label>
+        <input type="number" placeholder="" id="sdr-sample-rate" value="">
+        <label for="sdr-over-sample-rate">Over Sample Rate</label>
+        <input type="number" placeholder="" id="sdr-over-sample-rate" value="">
+      </div>
+    </div>
+    <div class="col flex-center">
+      <div class="input-wrapper">
+        <label for="sdr-sample-rate">Gain</label>
+        <input type="number" placeholder="" id="sdr-gain" value="">
+        <label for="sdr-mode">Transmit</label>
+        <select id="sdr-mode">
+          <option>RX</option>
+          <option>TX</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+
   <h1 class="text-center">Fake SIN Wave</h1>
   <div class="row">
     <div class="col flex-center">
       <canvas class="flex-center" id="iq-canvas"></canvas>
     </div>
   </div>
+
 </body>
 
 <script src="/base.js"></script>

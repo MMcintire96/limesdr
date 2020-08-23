@@ -40,6 +40,7 @@ struct Stats {
   char* antenna[5];
 };
 
+//TODO does this need to be a fifo? why not just a file(kinda like a config file)
 void writeStats(Stats *s) {
   std::string stats_fifo = "/tmp/limesdr-stats";
   mkfifo(stats_fifo.c_str(), 0666);

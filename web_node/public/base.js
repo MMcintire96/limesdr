@@ -89,3 +89,12 @@ const buildCanvas = () => {
 
 let step = -4;
 buildCanvas();
+
+
+// data binding
+const sdr_freq = document.getElementById('sdr-freq');
+const sdr_bandwidth = document.getElementById('sdr-bandwidth');
+const sdr_sample_rate = document.getElementById('sdr-sample-rate');
+const sdr_over_sample_rate = document.getElementById('sdr-over-sample-rate');
+const sdr_gain = document.getElementById('sdr-gain');
+const sdr_mode = document.getElementById('sdr-mode');
