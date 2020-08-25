@@ -14,32 +14,31 @@
 #include <mutex>
 #include <atomic>
 
-class Controller
-{
+class Controller {
 public:
-    // Start and Stop must be called by the same thread.
-    void Start();
-    void Stop();
-    
-    void Register();
-    
-    void WritePipe(std::string writeData);
-    
-    void ReadPipe(std::string* readData);
-    
+    // start and stop must be called by the same thread.
+    void start();
+    void stop();
+
+    void connect();
+
+    void writePipe(std::string writeData);
+
+    void readPipe(std::string* readData);
+
 private:
-    
-    void ThreadLoop();
-    
+
+    void threadLoop();
+
     std::mutex mutex;
     std::thread thread;
     std::atomic<int8_t> threadRun;
-    
+
     int read_pipe = 0;
     int write_pipe = 0;
 
     std::string write_fifo;
-    
+
     std::string readBuffer;
 };
 

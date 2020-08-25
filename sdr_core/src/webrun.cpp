@@ -1,5 +1,8 @@
 #include "../include/limeSDR.h"
 #include "../include/aoPlayer.h"
+#include "../include/Controller.h"
+#include "../include/utils.h"
+
 #include <string.h>
 #include <fstream>
 #include <iostream>
@@ -18,6 +21,37 @@ std::string configFile = "/tmp/sdr-app-info";
 std::string updateFile = "/tmp/sdr-app-update";
 struct stat result;
 long lastReadTime = 0;
+
+std::string parseCommand(limeSDR sdr, std::string key, std::string value) {
+  std::string rValue = "";
+  if (key == "frequency") {
+    sdr.setFreq(std::stof(value));
+    return rValue;
+  }
+  if (key == "gain") {
+    sdr.setGain(std::stof(value));
+    return rValue;
+  }
+  if (key == "sampleRate") {
+    sdr.setSampleRate(std::stoi(value) * 16, 0);
+    return rValue;
+  }
+  if (key == "bandwidth") {
+    sdr.setFIRFilter(std::stof(value));
+    return rValue;
+  }
+  return rValue;
+}
+
+void readController(limeSDR sdr, Controller &c) {
+  std::string pipeData = ""; //becomes value
+  c.readPipe(&pipeData);
+  if (pipeData.length() == 0) {
+    return;
+  }
+  std::string key = getKey(pipeData, ":");
+  std::string rValue = parseCommand(sdr, key, pipeData);
+}
 
 void updateStats(std::map<std::string, std::string> stats) {
   std::ofstream outFile(configFile);
@@ -105,7 +139,7 @@ float fmDemod_new(std::complex<float> &sample, std::complex<float> &lastSample, 
     return filterOut;
 }
 
-void play(limeSDR sdr) {
+void play(limeSDR sdr, Controller &controller) {
   // Initialize data buffers
   aoPlayer player = aoPlayer();
   char *audio_buffer;
@@ -155,7 +189,9 @@ void play(limeSDR sdr) {
         player.buildBuffer(audio_buffer, j, filterOutInt);
 
         if (++audioSampleCnt == buf_size/4) {
-          listenOnUpdate(sdr);
+          readController(sdr, controller);
+
+          //listenOnUpdate(sdr);
           player.play(device, audio_buffer, buf_size);
           audioSampleCnt = 0;
         }
@@ -168,16 +204,23 @@ void play(limeSDR sdr) {
 
 
 int main(int argc, char** argv) {
+  // if file not written
+  //std::map<std::string, std::string> stats;
+  //updateStats(stats);
+
   std::map<std::string, std::string> stats = getStats();
   limeSDR sdr = limeSDR();
   configureSDR(sdr, stats);
   listenOnUpdate(sdr);
+  Controller controller;
+  controller.start();
 
   sdr.initStream();
   sdr.startStream();
 
-  play(sdr);
+  play(sdr, controller);
 
+  controller.stop();
   sdr.stopStream();
   sdr.close();
 }

@@ -15,7 +15,6 @@ INC_DIRS := $(shell find $(SRC_DIRS) -type d) ./include
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
 CPPFLAGS ?= $(INC_FLAGS) -MMD -MP -Ofast -std=c++11 -Wall
-
 ifeq ($(MACHINE_OS),Darwin)
   LDFLAGS = -lao \
             -Bstatic /usr/local/lib/libLimeSuite.dylib
@@ -23,6 +22,7 @@ endif
 
 ifeq ($(MACHINE_OS),Linux)
   LDFLAGS = -lao \
+		-lpthread \
         -Bstatic /usr/lib/libLimeSuite.so
 endif
 
