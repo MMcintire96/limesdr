@@ -7,7 +7,7 @@
  */
 
 
-#include "../include/utilities.h"
+#include "utilities.h"
 #include <iostream>
 #include <unistd.h>
 #include <vector>

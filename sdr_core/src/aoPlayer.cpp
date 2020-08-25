@@ -1,4 +1,4 @@
-#include "../include/aoPlayer.h"
+#include "aoPlayer.h"
 #include <cstring>
 
 

@@ -1,5 +1,5 @@
-#include "../include/limeSDR.h"
-#include "../include/aoPlayer.h"
+#include "limeSDR.h"
+#include "aoPlayer.h"
 
 #include <sys/stat.h>
 #include <unistd.h>

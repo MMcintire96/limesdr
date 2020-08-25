@@ -6,8 +6,8 @@
  *
  */
 
-#include "../include/network_tools.h"
-#include "../include/utilities.h"
+#include "network_tools.h"
+#include "utilities.h"
 #include <stdarg.h>
 #include <unistd.h>
 #include <arpa/inet.h>

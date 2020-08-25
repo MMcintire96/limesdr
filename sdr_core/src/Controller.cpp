@@ -6,7 +6,7 @@
 //  Copyright © 2020 Bill McIntire. All rights reserved.
 //
 
-#include "../include/Controller.h"
+#include "Controller.h"
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>

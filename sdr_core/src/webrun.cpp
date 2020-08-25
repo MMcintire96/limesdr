@@ -1,7 +1,7 @@
-#include "../include/limeSDR.h"
-#include "../include/aoPlayer.h"
-#include "../include/Controller.h"
-#include "../include/utils.h"
+#include "limeSDR.h"
+#include "aoPlayer.h"
+#include "Controller.h"
+#include "utils.h"
 
 #include <string.h>
 #include <fstream>
@@ -57,7 +57,7 @@ void updateStats(std::map<std::string, std::string> stats) {
   std::ofstream outFile(configFile);
   stats["mode"] = "rx";
   stats["frequency"] = "104.3e6";
-  stats["gain"] = "1.0";
+  stats["gain"] = "0.5";
   stats["bandwidth"] = "200e3";
   stats["sampleRate"] = "44100";
   stats["overSampleRate"] = "16";
@@ -205,10 +205,10 @@ void play(limeSDR sdr, Controller &controller) {
 
 int main(int argc, char** argv) {
   // if file not written
-  //std::map<std::string, std::string> stats;
+  std::map<std::string, std::string> stats;
   //updateStats(stats);
-
-  std::map<std::string, std::string> stats = getStats();
+    
+  stats = getStats();
   limeSDR sdr = limeSDR();
   configureSDR(sdr, stats);
   listenOnUpdate(sdr);

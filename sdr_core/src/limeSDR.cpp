@@ -1,4 +1,4 @@
-#include "../include/limeSDR.h"
+#include "limeSDR.h"
 #include <iostream>
 #include <chrono>
 
