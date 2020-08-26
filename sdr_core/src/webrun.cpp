@@ -2,6 +2,7 @@
 #include "aoPlayer.h"
 #include "Controller.h"
 #include "utils.h"
+#include "signals.h"
 
 #include <string.h>
 #include <fstream>
@@ -153,11 +154,19 @@ void play(limeSDR sdr, Controller &controller) {
 
   int running = 1;
   float I, Q;
+<<<<<<< HEAD
   FM_Demod fm_Demod;
   float filterOut;
 
   static float decimateCnt = 0;
   std::complex<float> sample;
+=======
+  float filterOut = 0;
+  static float decimateCnt = 0;
+  std::complex<float> sample;
+    
+  FM_Demod fm_Demod;
+>>>>>>> 279489714760590bff58bd467668f729ddb13d0f
 
   const int overSampleRate = 16;
 
@@ -177,7 +186,12 @@ void play(limeSDR sdr, Controller &controller) {
       Q = gain * (float)buffer[i+1];
       sample = std::complex<float>(I, Q);
 
+<<<<<<< HEAD
       filterOut = fm_Demod.process(sample);
+=======
+      //filterOut = fmDemod_new(sample, lastSample, v, demodOut, filterOut);
+        filterOut = fm_Demod.process(sample);
+>>>>>>> 279489714760590bff58bd467668f729ddb13d0f
 
       if (++decimateCnt >= overSampleRate) {
         decimateCnt = 0;
@@ -203,8 +217,13 @@ void play(limeSDR sdr, Controller &controller) {
 int main(int argc, char** argv) {
   // if file not written
   std::map<std::string, std::string> stats;
+<<<<<<< HEAD
   //updateStats(stats);
 
+=======
+  updateStats(stats);
+    
+>>>>>>> 279489714760590bff58bd467668f729ddb13d0f
   stats = getStats();
   limeSDR sdr = limeSDR();
   configureSDR(sdr, stats);

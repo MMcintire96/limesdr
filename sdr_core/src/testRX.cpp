@@ -18,7 +18,7 @@ public:
     float process(std::complex<float> &sample) {
         // FM demodulate
         std::complex<float> v;
-        sample *= 1.0/(0.2 + std::abs(sample));    // limit amplitude to 1
+        sample *= 1.0/(0.02 + std::abs(sample));    // limit amplitude to 1
         v = sample * std::conj(lastSample);        // compute phase change vector
         lastSample = sample;                       // remember the this sample
         demodOut = std::imag(v);                   // 'Q' or imaginary part will contain the audio
@@ -30,7 +30,7 @@ public:
     
     float demodOut = 0;
     float filterOut = 0;
-    std::complex<float> lastSample;
+    std::complex<float> lastSample = {0, 0};
 };
 
 //TODO fifo block (running) untill a byte is read -- fix
@@ -114,6 +114,7 @@ int run(int argc, char** argv) {
           player.play(device, audio_buffer, buf_size);
           audioSampleCnt = 0;
         }
+          
       }
     }
 
