@@ -2,6 +2,7 @@
 #include "aoPlayer.h"
 #include "Controller.h"
 #include "utils.h"
+#include "signals.h"
 
 #include <string.h>
 #include <fstream>
@@ -154,12 +155,11 @@ void play(limeSDR sdr, Controller &controller) {
 
   int running = 1;
   float I, Q;
-  static float demodOut;
-  static float filterOut = 0;
+  float filterOut = 0;
   static float decimateCnt = 0;
   std::complex<float> sample;
-  static std::complex<float> lastSample(0, 0);
-  std::complex<float> v;
+    
+  FM_Demod fm_Demod;
 
   const int overSampleRate = 16;
 
@@ -179,7 +179,8 @@ void play(limeSDR sdr, Controller &controller) {
       Q = gain * (float)buffer[i+1];
       sample = std::complex<float>(I, Q);
 
-      filterOut = fmDemod_new(sample, lastSample, v, demodOut, filterOut);
+      //filterOut = fmDemod_new(sample, lastSample, v, demodOut, filterOut);
+        filterOut = fm_Demod.process(sample);
 
       if (++decimateCnt >= overSampleRate) {
         decimateCnt = 0;
@@ -206,7 +207,7 @@ void play(limeSDR sdr, Controller &controller) {
 int main(int argc, char** argv) {
   // if file not written
   std::map<std::string, std::string> stats;
-  //updateStats(stats);
+  updateStats(stats);
     
   stats = getStats();
   limeSDR sdr = limeSDR();
