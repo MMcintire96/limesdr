@@ -46,9 +46,9 @@ int run(int argc, char** argv) {
 
   int audioGain = 7000;
 
-  const int audioSampleRate = 44100;
+//  const int audioSampleRate = 44100;
   const int overSampleRate = 16;
-  double sampleRate = (audioSampleRate * overSampleRate);
+//  double sampleRate = (audioSampleRate * overSampleRate);
 
   //sdr.setSampleRate(sampleRate);
   sdr.setGain(gain);
@@ -80,7 +80,7 @@ int run(int argc, char** argv) {
   mkfifo(iqfifo.c_str(), 0666);
   FILE *iqfd = fopen(iqfifo.c_str(), "wb");
 
-  char freqBuffer[11];
+//  char freqBuffer[11];
 
   while (running) {
     int samplesRead = sdr.getStream(*buffer, sampleCnt);

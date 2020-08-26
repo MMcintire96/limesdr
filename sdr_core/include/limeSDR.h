@@ -1,4 +1,4 @@
-#include "lime/LimeSuite.h"
+#include "LimeSuite.h"
 
 class limeSDR {
   public:

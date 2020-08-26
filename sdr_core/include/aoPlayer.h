@@ -1,4 +1,4 @@
-#include <ao/ao.h>
+#include "ao.h"
 
 class aoPlayer {
   public:

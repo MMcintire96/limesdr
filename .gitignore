@@ -10,5 +10,5 @@
 *.exe
 *.dll
 *.dylib
-
+sdr_core/sdr
 
