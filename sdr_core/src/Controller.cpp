@@ -1,9 +1,9 @@
 //
 //  Controller.cpp
-//  Ideas
+//
 //
 //  Created by bill on 8/23/20.
-//  Copyright © 2020 Bill McIntire. All rights reserved.
+//
 //
 
 #include "Controller.h"
@@ -15,13 +15,13 @@
 #include <cstring> //memset linux
 
 void Controller::start() {
+    
   // open the pipe
-  write_fifo = "/tmp/limesdr-control-fifo-write";
+  write_fifo = "/tmp/lsdr-status-fifo";
   int r = mkfifo(write_fifo.c_str(), 0666);
   if (r < 0) {
       //printf("*** Failed to open the write pipe in Controller::Start()\n");
       //perror("error message:");
-      //exit(1);
   }
 
   // start the thread running
@@ -60,7 +60,7 @@ void Controller::readPipe(std::string* readData) {
 
 void Controller::threadLoop() {
   // open the pipe
-  std::string fifo = "/tmp/limesdr-control-fifo-read";
+  std::string fifo = "/tmp/lsdr-command-fifo";
   int r = mkfifo(fifo.c_str(), 0666);
   if (r < 0) {
       //printf("*** Failed to open the read pipe in Controller::Start()\n");

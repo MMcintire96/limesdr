@@ -12,19 +12,26 @@
 #include <complex>
 #include <cmath>
 
+class FM_Demod
+{
+public:
+    float process(std::complex<float> &sample) {
+        // FM demodulate
+        std::complex<float> v;
+        sample *= 1.0/(0.2 + std::abs(sample));    // limit amplitude to 1
+        v = sample * std::conj(lastSample);        // compute phase change vector
+        lastSample = sample;                       // remember the this sample
+        demodOut = std::imag(v);                   // 'Q' or imaginary part will contain the audio
 
-float fmDemod(std::complex<float> &sample, std::complex<float> &lastSample, std::complex<float> &v, float demodOut, float filterOut) {
-    // FM demodulate
-    sample *= 1.0/(0.2 + std::abs(sample));    // limit amplitude to 1
-    v = sample * std::conj(lastSample);        // compute phase change vector
-    lastSample = sample;                       // remember the this sample
-    demodOut = std::imag(v);                   // 'Q' or imaginary part will contain the audio
-
-    // lowpass filter the demod output
-    filterOut = 0.98 * filterOut + 0.02 * demodOut;
-    return filterOut;
-}
-
+        // lowpass filter the demod output
+        filterOut = 0.98 * filterOut + 0.02 * demodOut;
+        return filterOut;
+    }
+    
+    float demodOut = 0;
+    float filterOut = 0;
+    std::complex<float> lastSample;
+};
 
 //TODO fifo block (running) untill a byte is read -- fix
 
@@ -33,16 +40,16 @@ int running = 0;
 int run(int argc, char** argv) {
   limeSDR sdr = limeSDR();
 
-  float freq = 104.3e6;
-  float gain = 1.0;
-  float FIRFilter = 200e3; // bandwidth
+  float sdr_freq = 104.3e6;
+  float sdr_gain = 0.5;
+  float sdr_FIRFilter = 200e3; // bandwidth
 
   aoPlayer player = aoPlayer();
   char *audio_buffer;
   int driver = player.initDefaultPlayer();
 
   sdr.setRX();
-  sdr.setFreq(freq);
+  sdr.setFreq(sdr_freq);
 
   int audioGain = 7000;
 
@@ -51,8 +58,8 @@ int run(int argc, char** argv) {
 //  double sampleRate = (audioSampleRate * overSampleRate);
 
   //sdr.setSampleRate(sampleRate);
-  sdr.setGain(gain);
-  sdr.setFIRFilter(FIRFilter); //200e3 for wfm
+  sdr.setGain(sdr_gain);
+  sdr.setFIRFilter(sdr_FIRFilter); //200e3 for wfm
 
   sdr.initStream();
   sdr.startStream();
@@ -67,12 +74,11 @@ int run(int argc, char** argv) {
 
   running = 1;
   float I, Q;
-  static float demodOut;
-  static float filterOut = 0;
+  FM_Demod fm_Demod;
+  float filterOut;
+  
   static float decimateCnt = 0;
   std::complex<float> sample;
-  static std::complex<float> lastSample(0, 0);
-  std::complex<float> v;
 
   int audioSampleCnt = 0;
 
@@ -95,7 +101,7 @@ int run(int argc, char** argv) {
       Q = gain * (float)buffer[i+1];
       sample = std::complex<float>(I, Q);
 
-      filterOut = fmDemod(sample, lastSample, v, demodOut, filterOut);
+      filterOut = fm_Demod.process(sample);
 
       if (++decimateCnt >= overSampleRate) {
         decimateCnt = 0;
