@@ -98,3 +98,58 @@ const sdr_sample_rate = document.getElementById('sdr-sample-rate');
 const sdr_over_sample_rate = document.getElementById('sdr-over-sample-rate');
 const sdr_gain = document.getElementById('sdr-gain');
 const sdr_mode = document.getElementById('sdr-mode');
+
+async function postData(url, data) {
+  const resp = await fetch(url, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(data)
+  });
+  return resp;
+}
+
+const debounce = (fn, time) => {
+  let timeout;
+
+  return function() {
+    const functionCall = () => fn.apply(this, arguments);
+    clearTimeout(timeout);
+    timeout = setTimeout(functionCall, time);
+  }
+}
+
+
+sdr_freq.addEventListener('focusout', debounce((e) => {
+  if (e.target.value != '') {
+    const d = {'key': e.target.name, 'value': e.target.value.toString()+'e6'}
+    postData('/', d).then(data => console.log(data));
+  }
+}, 1000));
+
+sdr_bandwidth.addEventListener('focusout', debounce((e) => {
+  if (e.target.value != '') {
+    const d = {'key': e.target.name, 'value': e.target.value.toString()+'e3'}
+    postData('/', d).then(data => console.log(data));
+  }
+}, 1000));
+
+sdr_sample_rate.addEventListener('focusout', debounce((e) => {
+  if (e.target.value != '') {
+    const d = {'key': e.target.name, 'value': e.target.value.toString()}
+    postData('/', d).then(data => console.log(data));
+  }
+}, 1000));
+
+sdr_over_sample_rate.addEventListener('focusout', debounce((e) => {
+  if (e.target.value != '') {
+    const d = {'key': e.target.name, 'value': e.target.value.toString()}
+    postData('/', d).then(data => console.log(data));
+  }
+}, 1000));
+
+sdr_gain.addEventListener('focusout', debounce((e) => {
+  if (e.target.value != '') {
+    const d = {'key': e.target.name, 'value': e.target.value.toString()}
+    postData('/', d).then(data => console.log(data));
+  }
+}, 1000));

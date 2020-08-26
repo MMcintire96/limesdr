@@ -4,7 +4,31 @@ const net = require('net');
 const WebSocket = require('ws');
 const path = require('path');
 
+
+const commandPipe = fs.openSync('/tmp/lsdr-command-fifo', 'r+');
+
+const writePipe = (str) => {
+  fs.writeSync(commandPipe, str);
+}
+
+const handlePost = (req, res) => {
+  let data = {};
+  req.on('data', (chunk) => {
+    data = JSON.parse(chunk);
+  })
+  req.on('end', () => {
+    const sdrCmd = (data['key'] + ':' + data['value']).replace(' ', '');
+    writePipe(sdrCmd);
+    res.end();
+  });
+
+}
+
+
 const sendFile = (req, res) => {
+  if (req.method == 'POST') {
+    return handlePost(req, res);
+  }
   if (req.url === '/') {
     const filename = './public/index.html'
     fs.readFile(filename, (err, data) =>  {

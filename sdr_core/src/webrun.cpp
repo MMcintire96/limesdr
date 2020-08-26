@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <complex>
 
+
 #include <sys/stat.h>
 
 
@@ -104,28 +105,26 @@ void configureSDR(limeSDR sdr, std::map<std::string, std::string> stats) {
   lastReadTime = (long)result.st_mtime;
 }
 
-void listenOnUpdate(limeSDR sdr) {
-  stat(updateFile.c_str(), &result);
-  if ((long)result.st_mtime != lastReadTime) {
-    std::fstream inFile(updateFile);
-    std::string action;
-    std::getline(inFile, action);
 
-    inFile.close();
+class FM_Demod {
+  public:
+      float process(std::complex<float> &sample) {
+          // FM demodulate
+          std::complex<float> v;
+          sample *= 1.0/(0.2 + std::abs(sample));    // limit amplitude to 1
+          v = sample * std::conj(lastSample);        // compute phase change vector
+          lastSample = sample;                       // remember the this sample
+          demodOut = std::imag(v);                   // 'Q' or imaginary part will contain the audio
 
-    if (action == "update") {
-      std::map<std::string, std::string> stats = getStats();
-      configureSDR(sdr, stats);
-    }
+          // lowpass filter the demod output
+          filterOut = 0.98 * filterOut + 0.02 * demodOut;
+          return filterOut;
+      }
 
-    std::ofstream outFile(updateFile);
-    outFile << "done" << std::endl;
-    outFile.close();
-    stat(updateFile.c_str(), &result);
-    lastReadTime = result.st_mtime;
-  }
-
-}
+      float demodOut = 0;
+      float filterOut = 0;
+      std::complex<float> lastSample;
+  };
 
 float fmDemod_new(std::complex<float> &sample, std::complex<float> &lastSample, std::complex<float> &v, float demodOut, float filterOut) {
     // FM demodulate
@@ -154,12 +153,11 @@ void play(limeSDR sdr, Controller &controller) {
 
   int running = 1;
   float I, Q;
-  static float demodOut;
-  static float filterOut = 0;
+  FM_Demod fm_Demod;
+  float filterOut;
+
   static float decimateCnt = 0;
   std::complex<float> sample;
-  static std::complex<float> lastSample(0, 0);
-  std::complex<float> v;
 
   const int overSampleRate = 16;
 
@@ -179,7 +177,7 @@ void play(limeSDR sdr, Controller &controller) {
       Q = gain * (float)buffer[i+1];
       sample = std::complex<float>(I, Q);
 
-      filterOut = fmDemod_new(sample, lastSample, v, demodOut, filterOut);
+      filterOut = fm_Demod.process(sample);
 
       if (++decimateCnt >= overSampleRate) {
         decimateCnt = 0;
@@ -191,7 +189,6 @@ void play(limeSDR sdr, Controller &controller) {
         if (++audioSampleCnt == buf_size/4) {
           readController(sdr, controller);
 
-          //listenOnUpdate(sdr);
           player.play(device, audio_buffer, buf_size);
           audioSampleCnt = 0;
         }
@@ -207,11 +204,10 @@ int main(int argc, char** argv) {
   // if file not written
   std::map<std::string, std::string> stats;
   //updateStats(stats);
-    
+
   stats = getStats();
   limeSDR sdr = limeSDR();
   configureSDR(sdr, stats);
-  listenOnUpdate(sdr);
   Controller controller;
   controller.start();
 

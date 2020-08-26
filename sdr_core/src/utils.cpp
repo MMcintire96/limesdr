@@ -2,8 +2,7 @@
 #include <unistd.h>
 
 
-void split(std::string str, std::string delimiter, std::vector<std::string> &str_copy)
-{
+void split(std::string str, std::string delimiter, std::vector<std::string> &str_copy) {
     std::string token;
     std::size_t pos;
     while ((pos = str.find(delimiter)) != std::string::npos) {

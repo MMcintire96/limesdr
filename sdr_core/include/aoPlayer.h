@@ -1,4 +1,8 @@
-#include "ao.h"
+#if __APPLE__
+  #include "ao.h"
+#else
+  #include <ao/ao.h>
+#endif
 
 class aoPlayer {
   public:
