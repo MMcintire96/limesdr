@@ -11,7 +11,13 @@
 
 #include <complex>
 
-class FM_Demod
+class BaseClass_Demod
+{
+public:
+    virtual float process(std::complex<float> &sample) = 0;
+};
+
+class FM_Demod : public BaseClass_Demod
 {
 public:
     float process(std::complex<float> &sample);
@@ -21,5 +27,17 @@ private:
     float filterOut = 0;
     std::complex<float> lastSample = {0, 0};
 };
+
+class OOK_Demod : public BaseClass_Demod
+{
+public:
+    float process(std::complex<float> &sample);
+    
+private:
+    float demodOut = 0;
+    float filterOut = 0;
+    std::complex<float> lastSample = {0, 0};
+};
+
 
 #endif /* signals_hpp */

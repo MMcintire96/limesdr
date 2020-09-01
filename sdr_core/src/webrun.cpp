@@ -121,7 +121,13 @@ void play(limeSDR sdr, Controller &controller) {
 
   int running = 1;
   float I, Q;
-  FM_Demod fm_Demod;
+    
+    // here we create two types of demods and assign one to be the "Demod In Use"
+    FM_Demod fm_Demod;
+    OOK_Demod ook_Demod;
+    BaseClass_Demod* demodInUse;
+    demodInUse = &fm_Demod;
+    
   float filterOut;
 
   static float decimateCnt = 0;
@@ -142,7 +148,7 @@ void play(limeSDR sdr, Controller &controller) {
       Q = gain * (float)buffer[i+1];
       sample = std::complex<float>(I, Q);
 
-      filterOut = fm_Demod.process(sample);
+      filterOut = demodInUse->process(sample);
 
       if (++decimateCnt >= overSampleRate) {
         decimateCnt = 0;

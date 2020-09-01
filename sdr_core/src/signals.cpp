@@ -24,3 +24,16 @@ float FM_Demod::process(std::complex<float> &sample)
     filterOut = 0.98 * filterOut + 0.02 * demodOut;
     return filterOut;
 }
+
+//=============================================================
+// OOK Demod and lowpass filter
+
+float OOK_Demod::process(std::complex<float> &sample)
+{
+    // OOK demodulate
+    demodOut = std::abs(sample);            // compute amplitude of the input
+    
+    // lowpass filter the demod output
+    filterOut = 0.98 * filterOut + 0.02 * demodOut;
+    return filterOut;
+}
