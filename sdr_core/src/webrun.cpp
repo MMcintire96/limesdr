@@ -125,8 +125,18 @@ void play(limeSDR sdr, Controller &controller) {
     // here we create two types of demods and assign one to be the "Demod In Use"
     FM_Demod fm_Demod;
     OOK_Demod ook_Demod;
+    AM_Demod am_Demod;
     BaseClass_Demod* demodInUse;
-    demodInUse = &fm_Demod;
+    
+    // *** this needs to be controlled by the gui (eventually)
+    int demodType = 2;
+    switch (demodType) {
+        case 1 : demodInUse = &fm_Demod; break;
+        case 2 : demodInUse = &am_Demod; break;
+        case 3 : demodInUse = &ook_Demod; break;
+        default : demodInUse = &fm_Demod; break;
+    }
+    
     
   float filterOut;
 

@@ -36,7 +36,17 @@ public:
 private:
     float demodOut = 0;
     float filterOut = 0;
-    std::complex<float> lastSample = {0, 0};
+};
+
+class AM_Demod : public BaseClass_Demod
+{
+public:
+    float process(std::complex<float> &sample);
+    
+private:
+    float demodOut = 0;
+    float filterOut = 0;
+    float carrierLevel = 0;
 };
 
 
