@@ -129,7 +129,7 @@ void play(limeSDR sdr, Controller &controller) {
     BaseClass_Demod* demodInUse;
     
     // *** this needs to be controlled by the gui (eventually)
-    int demodType = 2;
+    int demodType = 1;
     switch (demodType) {
         case 1 : demodInUse = &fm_Demod; break;
         case 2 : demodInUse = &am_Demod; break;
