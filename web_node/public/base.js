@@ -110,7 +110,6 @@ async function postData(url, data) {
 
 const debounce = (fn, time) => {
   let timeout;
-
   return function() {
     const functionCall = () => fn.apply(this, arguments);
     clearTimeout(timeout);
@@ -119,37 +118,44 @@ const debounce = (fn, time) => {
 }
 
 
-sdr_freq.addEventListener('focusout', debounce((e) => {
-  if (e.target.value != '') {
-    const d = {'key': e.target.name, 'value': e.target.value.toString()+'e6'}
-    postData('/', d).then(data => console.log(data));
-  }
-}, 1000));
+const sciNotif = (val, multiplier) => val * multiplier;
 
-sdr_bandwidth.addEventListener('focusout', debounce((e) => {
-  if (e.target.value != '') {
-    const d = {'key': e.target.name, 'value': e.target.value.toString()+'e3'}
-    postData('/', d).then(data => console.log(data));
-  }
-}, 1000));
+sdr_freq.addEventListener('keyup', debounce(( { target: {name, value} } ) => {
+  value !== '' && postData('/', {key: name, value: sciNotif(value, 1000000)});
+}, 500));
 
-sdr_sample_rate.addEventListener('focusout', debounce((e) => {
-  if (e.target.value != '') {
-    const d = {'key': e.target.name, 'value': e.target.value.toString()}
-    postData('/', d).then(data => console.log(data));
-  }
-}, 1000));
+sdr_bandwidth.addEventListener('keyup', debounce(( {target: {name, value}} ) => {
+  value !== '' && postData('/', {key: name, value: sciNotif(value, 1000)});
+}, 500));
 
-sdr_over_sample_rate.addEventListener('focusout', debounce((e) => {
-  if (e.target.value != '') {
-    const d = {'key': e.target.name, 'value': e.target.value.toString()}
-    postData('/', d).then(data => console.log(data));
-  }
-}, 1000));
+sdr_sample_rate.addEventListener('keyup', debounce(( {target: {name, value}} ) => {
+  value !== '' && postData('/', {key: name, value: value});
+}, 500));
 
-sdr_gain.addEventListener('focusout', debounce((e) => {
-  if (e.target.value != '') {
-    const d = {'key': e.target.name, 'value': e.target.value.toString()}
-    postData('/', d).then(data => console.log(data));
-  }
-}, 1000));
+sdr_over_sample_rate.addEventListener('keyup', debounce(( {target: {name, value}} ) => {
+  value !== '' && postData('/', {key: name, value: value});
+}, 500));
+
+sdr_gain.addEventListener('keyup', debounce(( {target: {name, value}} ) => {
+  value !== '' && postData('/', {key: name, value: value});
+}, 500));
+
+
+async function getData(url) {
+  const resp = await fetch(url, {
+    method: 'GET',
+    headers: {'Content-Type': 'application/json'},
+  });
+  return resp.json();
+}
+
+const setValues = () => {
+  getData('/').then(d => {
+    sdr_freq.value = d.frequency;
+    sdr_bandwidth.value = d.bandwidth;
+    sdr_gain.value = d.gain;
+    sdr_sample_rate.value = d.sampleRate;
+    sdr_over_sample_rate.value = d.overSampleRate;
+  });
+}
+setValues();

@@ -6,6 +6,7 @@ const path = require('path');
 
 
 const commandPipe = fs.openSync('/tmp/lsdr-command-fifo', 'r+');
+//const readAppFile = fs.openSync('/tmp/sdr-app-info', 'r');
 
 const writePipe = (str) => {
   fs.writeSync(commandPipe, str);
@@ -15,19 +16,35 @@ const handlePost = (req, res) => {
   let data = {};
   req.on('data', (chunk) => {
     data = JSON.parse(chunk);
-  })
+  });
   req.on('end', () => {
     const sdrCmd = (data['key'] + ':' + data['value']).replace(' ', '');
     writePipe(sdrCmd);
     res.end();
   });
+}
 
+const handleGet = (req, res) => {
+  const readAppFile = fs.openSync('/tmp/sdr-app-info', 'r');
+  const f = fs.readFileSync(readAppFile, 'UTF-8');
+  const lines = f.split(/\r?\n/);
+  data = {};
+  lines.forEach((line) => {
+    l = line.split(' : ')
+    if (l[0])
+      data[l[0]] = l[1];
+  });
+  res.write(JSON.stringify(data))
+  res.end();
 }
 
 
 const sendFile = (req, res) => {
   if (req.method == 'POST') {
     return handlePost(req, res);
+  }
+  if (req.url == '/' && req.headers['content-type'] == 'application/json') {
+    return handleGet(req, res);
   }
   if (req.url === '/') {
     const filename = './public/index.html'
